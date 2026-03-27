@@ -1,0 +1,11 @@
+name: BierXP
+version: 1.0
+main: de.bierxp.BierXP
+api-version: 1.21
+author: RicoDessau
+
+commands:
+  bierxp:
+    description: Spawnt den XP Bankier
+    usage: /bierxp spawn
+    permission: bierxp.admin
