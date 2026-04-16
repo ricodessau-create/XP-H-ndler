@@ -2,14 +2,11 @@ package de.bierxp;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,10 +19,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,18 +29,11 @@ import java.util.UUID;
 public class XPHandler implements Listener {
 
     private final BierXP plugin;
-    private final File dataFile;
-    private final FileConfiguration dataConfig;
     private Map<Player, Integer> bottleCreationQueue = new HashMap<>();
     private String guiTitle = ChatColor.DARK_GREEN + "BierXP Bank";
 
     public XPHandler(BierXP plugin) {
         this.plugin = plugin;
-        this.dataFile = new File(plugin.getDataFolder(), "xpdata.yml");
-        if (!dataFile.exists()) {
-            try { dataFile.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
-        }
-        this.dataConfig = YamlConfiguration.loadConfiguration(dataFile);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -231,14 +218,20 @@ public class XPHandler implements Listener {
         p.sendMessage(ChatColor.GREEN + "Flasche erstellt.");
     }
 
+    // Speichert in data.yml (Haupt-Config)
+    public void save() {
+        plugin.saveConfig();
+    }
+
     private int getStoredXp(UUID uuid) {
-        return dataConfig.getInt("players." + uuid.toString(), 0);
+        // Liest aus data.yml
+        return plugin.getConfig().getInt("players." + uuid.toString(), 0);
     }
 
     private void addStoredXp(UUID uuid, int amount) {
         int current = getStoredXp(uuid);
-        dataConfig.set("players." + uuid.toString(), current + amount);
-        try { dataConfig.save(dataFile); } catch (IOException e) { e.printStackTrace(); }
+        plugin.getConfig().set("players." + uuid.toString(), current + amount);
+        // Speichern wird zentral beim Disable oder manueller Save gemacht
     }
     
     private ItemStack createButton(Material mat, String name, String lore) {
