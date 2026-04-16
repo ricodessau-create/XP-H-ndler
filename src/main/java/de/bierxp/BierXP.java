@@ -9,17 +9,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class BierXP extends JavaPlugin implements CommandExecutor {
 
     private static BierXP instance;
-    private BankerManager bankerManager;
+    private NPCManager npcManager;
     private XPHandler xpHandler;
 
     @Override
     public void onEnable() {
         instance = this;
-        
+
         saveDefaultConfig();
-        
-        // Wir übergeben 'this' damit beide Manager auf dieselbe data.yml zugreifen können
-        bankerManager = new BankerManager(this);
+
+        npcManager = new NPCManager();
         xpHandler = new XPHandler(this);
 
         getCommand("bierxp").setExecutor(this);
@@ -31,7 +30,7 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
     @Override
     public void onDisable() {
         if (xpHandler != null) xpHandler.save();
-        if (bankerManager != null) bankerManager.save();
+        // NPCs müssen nicht gespeichert werden, da Fake-Player nicht persistieren
     }
 
     @Override
@@ -41,19 +40,36 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
             return true;
         }
 
-        if (args.length == 1 && args[0].equalsIgnoreCase("spawn")) {
-            if (!(sender instanceof Player)) return true;
-            Player p = (Player) sender;
-            bankerManager.spawnBanker(p.getLocation());
-            p.sendMessage("Bankier gespawnt.");
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Nur Spieler können diesen Befehl nutzen.");
             return true;
         }
 
-        sender.sendMessage("Nutze: /bierxp spawn");
+        Player p = (Player) sender;
+
+        // /bierxp spawnnpc
+        if (args.length == 1 && args[0].equalsIgnoreCase("spawnnpc")) {
+
+            // Beispiel-Skin (muss später ersetzt werden)
+            String skinValue = "SKIN_VALUE_HIER";
+            String skinSignature = "SKIN_SIGNATURE_HIER";
+
+            npcManager.spawnNPC(
+                    p.getLocation(),
+                    "BierXP Banker",
+                    skinValue,
+                    skinSignature
+            );
+
+            p.sendMessage("NPC gespawnt.");
+            return true;
+        }
+
+        p.sendMessage("Nutze: /bierxp spawnnpc");
         return true;
     }
 
     public static BierXP getInstance() { return instance; }
-    public BankerManager getBankerManager() { return bankerManager; }
+    public NPCManager getNPCManager() { return npcManager; }
     public XPHandler getXPHandler() { return xpHandler; }
 }
