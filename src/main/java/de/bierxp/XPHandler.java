@@ -40,8 +40,9 @@ public class XPHandler implements Listener {
     public void onInteractNPC(PlayerInteractEntityEvent e) {
         if (e.getHand() != EquipmentSlot.HAND) return;
         Entity entity = e.getRightClicked();
-        
-        if (plugin.getBankerManager().isBanker(entity)) {
+
+        // NEU: NPC statt Villager erkennen
+        if (entity.getName().equals("BierXP Banker")) {
             e.setCancelled(true);
             openBankGUI((Player) e.getPlayer());
         }
@@ -77,20 +78,20 @@ public class XPHandler implements Listener {
     public void onInventoryClick(InventoryClickEvent e) {
         if (!e.getView().getTitle().equals(guiTitle)) return;
         e.setCancelled(true);
-        
+
         if (!(e.getWhoClicked() instanceof Player)) return;
         Player p = (Player) e.getWhoClicked();
-        
+
         int slot = e.getRawSlot();
-        
+
         if (slot == 10) { depositXp(p, 100); openBankGUI(p); }
         if (slot == 11) { depositXp(p, 1000); openBankGUI(p); }
         if (slot == 12) { depositAllXp(p); openBankGUI(p); }
-        
+
         if (slot == 14) { withdrawXp(p, 100); openBankGUI(p); }
         if (slot == 15) { withdrawXp(p, 1000); openBankGUI(p); }
         if (slot == 16) { withdrawAllXp(p); openBankGUI(p); }
-        
+
         if (slot == 22) {
             p.closeInventory();
             p.sendMessage(ChatColor.AQUA + "Schreibe die Menge an XP in den Chat. (Abbruch: 'stop')");
@@ -104,7 +105,7 @@ public class XPHandler implements Listener {
         if (bottleCreationQueue.containsKey(p)) {
             e.setCancelled(true);
             String msg = e.getMessage();
-            
+
             if (msg.equalsIgnoreCase("stop")) {
                 bottleCreationQueue.remove(p);
                 p.sendMessage(ChatColor.RED + "Abgebrochen.");
@@ -114,42 +115,42 @@ public class XPHandler implements Listener {
             try {
                 int amount = Integer.parseInt(msg);
                 if (amount <= 0) throw new NumberFormatException();
-                
+
                 int finalAmount = amount;
                 plugin.getServer().getScheduler().runTask(plugin, () -> createXpBottle(p, finalAmount));
-                
+
             } catch (NumberFormatException ex) {
                 p.sendMessage(ChatColor.RED + "Ungültige Zahl.");
             }
-            
+
             bottleCreationQueue.remove(p);
         }
     }
-    
+
     @EventHandler
     public void onBottleThrow(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (e.getHand() != EquipmentSlot.HAND) return;
-        
+
         ItemStack item = e.getItem();
         if (item == null || item.getType() != Material.EXPERIENCE_BOTTLE) return;
         if (!item.hasItemMeta()) return;
-        
+
         ItemMeta meta = item.getItemMeta();
         if (!meta.getDisplayName().startsWith(ChatColor.AQUA + "XP Flasche (")) return;
-        
+
         List<String> lore = meta.getLore();
         if (lore == null || lore.isEmpty()) return;
-        
+
         try {
             String data = ChatColor.stripColor(lore.get(0)).replace("Enthält: ", "").replace(" XP", "");
             int xp = Integer.parseInt(data);
-            
+
             item.setAmount(item.getAmount() - 1);
             e.getPlayer().giveExp(xp);
             e.getPlayer().sendMessage(ChatColor.GREEN + "+" + xp + " XP erhalten!");
             e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-            
+
             e.setCancelled(true);
         } catch (Exception ex) { }
     }
@@ -159,7 +160,7 @@ public class XPHandler implements Listener {
             p.sendMessage(ChatColor.RED + "Nicht genug XP!");
             return;
         }
-        p.giveExp(-amount); 
+        p.giveExp(-amount);
         addStoredXp(p.getUniqueId(), amount);
         p.sendMessage(ChatColor.GREEN + "+ " + amount + " XP eingezahlt.");
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
@@ -196,16 +197,16 @@ public class XPHandler implements Listener {
         p.sendMessage(ChatColor.GREEN + "- " + stored + " XP ausgezahlt.");
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
     }
-    
+
     private void createXpBottle(Player p, int amount) {
         int stored = getStoredXp(p.getUniqueId());
         if (stored < amount) {
             p.sendMessage(ChatColor.RED + "Nicht genug XP auf der Bank!");
             return;
         }
-        
+
         addStoredXp(p.getUniqueId(), -amount);
-        
+
         ItemStack bottle = new ItemStack(Material.EXPERIENCE_BOTTLE);
         ItemMeta meta = bottle.getItemMeta();
         meta.setDisplayName(ChatColor.AQUA + "XP Flasche (" + amount + ")");
@@ -213,27 +214,24 @@ public class XPHandler implements Listener {
         lore.add(ChatColor.YELLOW + "Enthält: " + amount + " XP");
         meta.setLore(lore);
         bottle.setItemMeta(meta);
-        
+
         p.getInventory().addItem(bottle);
         p.sendMessage(ChatColor.GREEN + "Flasche erstellt.");
     }
 
-    // Speichert in data.yml (Haupt-Config)
     public void save() {
         plugin.saveConfig();
     }
 
     private int getStoredXp(UUID uuid) {
-        // Liest aus data.yml
         return plugin.getConfig().getInt("players." + uuid.toString(), 0);
     }
 
     private void addStoredXp(UUID uuid, int amount) {
         int current = getStoredXp(uuid);
         plugin.getConfig().set("players." + uuid.toString(), current + amount);
-        // Speichern wird zentral beim Disable oder manueller Save gemacht
     }
-    
+
     private ItemStack createButton(Material mat, String name, String lore) {
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
@@ -246,4 +244,4 @@ public class XPHandler implements Listener {
         item.setItemMeta(meta);
         return item;
     }
-}
+    }
