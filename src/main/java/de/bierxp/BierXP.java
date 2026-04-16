@@ -30,7 +30,6 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
     @Override
     public void onDisable() {
         if (xpHandler != null) xpHandler.save();
-        // NPCs müssen nicht gespeichert werden, da Fake-Player nicht persistieren
     }
 
     @Override
@@ -47,10 +46,10 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
 
         Player p = (Player) sender;
 
-        // /bierxp spawnnpc
-        if (args.length == 1 && args[0].equalsIgnoreCase("spawnnpc")) {
+        // ALTER COMMAND BLEIBT: /bierxp spawn
+        if (args.length == 1 && args[0].equalsIgnoreCase("spawn")) {
 
-            // Beispiel-Skin (muss später ersetzt werden)
+            // Skin-Daten später einfügen
             String skinValue = "SKIN_VALUE_HIER";
             String skinSignature = "SKIN_SIGNATURE_HIER";
 
@@ -61,11 +60,11 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
                     skinSignature
             );
 
-            p.sendMessage("NPC gespawnt.");
+            p.sendMessage("Bankier gespawnt.");
             return true;
         }
 
-        p.sendMessage("Nutze: /bierxp spawnnpc");
+        p.sendMessage("Nutze: /bierxp spawn");
         return true;
     }
 
