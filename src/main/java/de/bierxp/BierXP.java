@@ -7,10 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -96,17 +94,22 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
     }
     
     private void loadBankers() {
+        bankers.clear();
         if (dataConfig.contains("bankers")) {
-            for (String uuidStr : dataConfig.getStringList("bankers")) {
+            List<String> uuidStrings = dataConfig.getStringList("bankers");
+            for (String uuidStr : uuidStrings) {
                 try {
                     bankers.add(UUID.fromString(uuidStr));
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    getLogger().warning("Konnte Bankier UUID nicht laden: " + uuidStr);
+                }
             }
         }
     }
 
-    // --- Event: Bankier anklicken (Priorität HIGH um andere Plugins zu übergehen) ---
-    @EventHandler(priority = EventPriority.HIGH)
+    // --- Event: Bankier anklicken ---
+    // Priorität LOWEST: Wir wollen ALS ERSTES reagieren, bevor antiTrade es cancelt
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInteractNPC(PlayerInteractEntityEvent e) {
         if (e.getHand() != EquipmentSlot.HAND) return;
         if (!(e.getRightClicked() instanceof Villager)) return;
@@ -114,7 +117,7 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         Villager v = (Villager) e.getRightClicked();
         
         if (bankers.contains(v.getUniqueId())) {
-            e.setCancelled(true); // Blockt Vanilla Trading UND NoVillagerTrading Meldungen
+            e.setCancelled(true); // Wir canceln es SOFORT für alle anderen (antiTrade, Vanilla Trading)
             openBankGUI(e.getPlayer());
         }
     }
@@ -134,7 +137,7 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         info.setItemMeta(infoMeta);
         inv.setItem(13, info);
 
-        // Einzahlen Buttons (Angepasst auf sinnvolle Mengen)
+        // Einzahlen Buttons
         inv.setItem(10, createButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "100 XP einzahlen", null));
         inv.setItem(11, createButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "1000 XP einzahlen", null));
         inv.setItem(12, createButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "Alles einzahlen", null));
@@ -196,7 +199,6 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
                 int amount = Integer.parseInt(msg);
                 if (amount <= 0) throw new NumberFormatException();
                 
-                // Muss auf Main Thread syncen für Inventar-Operationen
                 int finalAmount = amount;
                 getServer().getScheduler().runTask(this, () -> createXpBottle(p, finalAmount));
                 
@@ -235,7 +237,7 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
             
             e.setCancelled(true);
         } catch (Exception ex) {
-            // Falls Parsing fehlschlägt, lass Vanilla Logik gelten
+            // Parsing error
         }
     }
 
@@ -324,7 +326,12 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
 
     private void saveData() {
         try {
-            dataConfig.set("bankers", bankers);
+            // FIX: Konvertiere UUIDs zu Strings vor dem Speichern!
+            List<String> uuidStrings = new ArrayList<>();
+            for (UUID id : bankers) {
+                uuidStrings.add(id.toString());
+            }
+            dataConfig.set("bankers", uuidStrings);
             dataConfig.save(dataFile);
         } catch (IOException e) {
             e.printStackTrace();
@@ -353,4 +360,4 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         item.setItemMeta(meta);
         return item;
     }
-                          }
+}
