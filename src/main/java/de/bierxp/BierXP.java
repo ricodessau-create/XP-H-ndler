@@ -7,8 +7,10 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -71,13 +73,12 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
             spawnBanker(p.getLocation());
             p.sendMessage(ChatColor.GREEN + "BierXP Bankier gespawnt.");
             return true;
-        }
+    }
 
         sender.sendMessage(ChatColor.RED + "Nutze: /bierxp spawn");
         return true;
     }
 
-    // --- NPC Logik ---
     private void spawnBanker(Location loc) {
         Villager v = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
         v.setCustomName(bankerName);
@@ -100,15 +101,11 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
             for (String uuidStr : uuidStrings) {
                 try {
                     bankers.add(UUID.fromString(uuidStr));
-                } catch (Exception e) {
-                    getLogger().warning("Konnte Bankier UUID nicht laden: " + uuidStr);
-                }
+                } catch (Exception e) { }
             }
         }
     }
 
-    // --- Event: Bankier anklicken ---
-    // Priorität LOWEST: Wir wollen ALS ERSTES reagieren, bevor antiTrade es cancelt
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInteractNPC(PlayerInteractEntityEvent e) {
         if (e.getHand() != EquipmentSlot.HAND) return;
@@ -117,17 +114,15 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         Villager v = (Villager) e.getRightClicked();
         
         if (bankers.contains(v.getUniqueId())) {
-            e.setCancelled(true); // Wir canceln es SOFORT für alle anderen (antiTrade, Vanilla Trading)
+            e.setCancelled(true);
             openBankGUI(e.getPlayer());
         }
     }
 
-    // --- GUI Logik ---
     private void openBankGUI(Player p) {
         Inventory inv = Bukkit.createInventory(null, 27, guiTitle);
         int storedXp = getStoredXp(p.getUniqueId());
 
-        // Info Item
         ItemStack info = new ItemStack(Material.EXPERIENCE_BOTTLE);
         ItemMeta infoMeta = info.getItemMeta();
         infoMeta.setDisplayName(ChatColor.GREEN + "Dein Guthaben");
@@ -137,17 +132,14 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         info.setItemMeta(infoMeta);
         inv.setItem(13, info);
 
-        // Einzahlen Buttons
         inv.setItem(10, createButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "100 XP einzahlen", null));
         inv.setItem(11, createButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "1000 XP einzahlen", null));
         inv.setItem(12, createButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "Alles einzahlen", null));
 
-        // Auszahlen Buttons
         inv.setItem(14, createButton(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "100 XP auszahlen", null));
         inv.setItem(15, createButton(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "1000 XP auszahlen", null));
         inv.setItem(16, createButton(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "Alles auszahlen", null));
 
-        // Flasche erstellen
         inv.setItem(22, createButton(Material.GLASS_BOTTLE, ChatColor.AQUA + "XP Flasche füllen", "Klick mich"));
 
         p.openInventory(inv);
@@ -163,25 +155,21 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         
         int slot = e.getRawSlot();
         
-        // Einzahlen
         if (slot == 10) { depositXp(p, 100); openBankGUI(p); }
         if (slot == 11) { depositXp(p, 1000); openBankGUI(p); }
         if (slot == 12) { depositAllXp(p); openBankGUI(p); }
         
-        // Auszahlen
         if (slot == 14) { withdrawXp(p, 100); openBankGUI(p); }
         if (slot == 15) { withdrawXp(p, 1000); openBankGUI(p); }
         if (slot == 16) { withdrawAllXp(p); openBankGUI(p); }
         
-        // Flasche
         if (slot == 22) {
             p.closeInventory();
-            p.sendMessage(ChatColor.AQUA + "Schreibe die Menge an XP in den Chat, die in die Flasche soll. (Abbrechen mit 'stop')");
+            p.sendMessage(ChatColor.AQUA + "Schreibe die Menge an XP in den Chat. (Abbruch: 'stop')");
             bottleCreationQueue.put(p, 1);
         }
     }
 
-    // --- Chat Input für Flaschen ---
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
@@ -203,14 +191,13 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
                 getServer().getScheduler().runTask(this, () -> createXpBottle(p, finalAmount));
                 
             } catch (NumberFormatException ex) {
-                p.sendMessage(ChatColor.RED + "Ungültige Zahl. Versuche es erneut.");
+                p.sendMessage(ChatColor.RED + "Ungültige Zahl.");
             }
             
             bottleCreationQueue.remove(p);
         }
     }
     
-    // --- XP Flasche werfen ---
     @EventHandler
     public void onBottleThrow(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
@@ -237,12 +224,10 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
             
             e.setCancelled(true);
         } catch (Exception ex) {
-            // Parsing error
+            // Fehler beim Parsen
         }
     }
 
-    // --- Mathematik ---
-    
     private void depositXp(Player p, int amount) {
         if (p.getTotalExperience() < amount) {
             p.sendMessage(ChatColor.RED + "Nicht genug XP! (Du hast: " + p.getTotalExperience() + ")");
@@ -314,19 +299,17 @@ public class BierXP extends JavaPlugin implements Listener, CommandExecutor {
         p.sendMessage(ChatColor.GREEN + "Flasche mit " + amount + " XP erstellt.");
     }
 
-    // --- Data Storage ---
     private void setupDataFile() {
         dataFile = new File(getDataFolder(), "data.yml");
         if (!dataFile.exists()) {
             dataFile.getParentFile().mkdirs();
-            try { dataFile.createNewFile(); } catch (IOException e) {}
+            try { dataFile.createNewFile(); } catch (IOException e) { }
         }
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
     }
 
     private void saveData() {
         try {
-            // FIX: Konvertiere UUIDs zu Strings vor dem Speichern!
             List<String> uuidStrings = new ArrayList<>();
             for (UUID id : bankers) {
                 uuidStrings.add(id.toString());
