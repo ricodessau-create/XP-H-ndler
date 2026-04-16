@@ -1,17 +1,12 @@
 package de.bierxp;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,19 +14,12 @@ import java.util.UUID;
 public class BankerManager {
 
     private final BierXP plugin;
-    private final File dataFile;
-    private final FileConfiguration dataConfig;
     private final List<UUID> bankers = new ArrayList<>();
     
     private String bankerName = ChatColor.GOLD + "BierXP Bankier";
 
     public BankerManager(BierXP plugin) {
         this.plugin = plugin;
-        this.dataFile = new File(plugin.getDataFolder(), "bankers.yml");
-        if (!dataFile.exists()) {
-            try { dataFile.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
-        }
-        this.dataConfig = YamlConfiguration.loadConfiguration(dataFile);
         load();
     }
 
@@ -56,20 +44,23 @@ public class BankerManager {
 
     private void load() {
         bankers.clear();
-        if (dataConfig.contains("bankers")) {
-            for (String uuidStr : dataConfig.getStringList("bankers")) {
+        // Lädt aus der Haupt-config (data.yml), wie im alten Plugin
+        FileConfiguration config = plugin.getConfig();
+        if (config.contains("bankers")) {
+            for (String uuidStr : config.getStringList("bankers")) {
                 try {
-                    UUID id = UUID.fromString(uuidStr);
-                    bankers.add(id);
+                    bankers.add(UUID.fromString(uuidStr));
                 } catch (Exception e) { }
             }
         }
     }
 
     public void save() {
+        // Speichert in die Haupt-config (data.yml)
+        FileConfiguration config = plugin.getConfig();
         List<String> uuidStrings = new ArrayList<>();
         for (UUID id : bankers) uuidStrings.add(id.toString());
-        dataConfig.set("bankers", uuidStrings);
-        try { dataConfig.save(dataFile); } catch (IOException e) { e.printStackTrace(); }
+        config.set("bankers", uuidStrings);
+        plugin.saveConfig();
     }
 }
