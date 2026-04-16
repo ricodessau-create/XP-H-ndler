@@ -18,6 +18,7 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
         
         saveDefaultConfig();
         
+        // Wir übergeben 'this' damit beide Manager auf dieselbe data.yml zugreifen können
         bankerManager = new BankerManager(this);
         xpHandler = new XPHandler(this);
 
@@ -29,6 +30,7 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onDisable() {
+        if (xpHandler != null) xpHandler.save();
         if (bankerManager != null) bankerManager.save();
     }
 
