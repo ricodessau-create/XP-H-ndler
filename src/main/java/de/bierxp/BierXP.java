@@ -21,9 +21,8 @@ public class BierXP extends JavaPlugin {
 
         npcManager = new NPCManager();
 
-        // ⭐ WICHTIG: Commands registrieren
-        getCommand("spawnnpc").setExecutor(this);
-        getCommand("despawnnpc").setExecutor(this);
+        // Hauptbefehl registrieren
+        getCommand("bierxp").setExecutor(this);
 
         getLogger().info("BierXP gestartet (Packet-NPC aktiv).");
     }
@@ -33,7 +32,14 @@ public class BierXP extends JavaPlugin {
 
         if (!(sender instanceof Player player)) return true;
 
-        if (cmd.getName().equalsIgnoreCase("spawnnpc")) {
+        if (!cmd.getName().equalsIgnoreCase("bierxp")) return false;
+
+        if (args.length == 0) {
+            player.sendMessage("§eNutze: /bierxp <spawn|despawn>");
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("spawn")) {
 
             Location loc = player.getLocation().add(player.getLocation().getDirection().normalize().multiply(2));
 
@@ -48,12 +54,13 @@ public class BierXP extends JavaPlugin {
             return true;
         }
 
-        if (cmd.getName().equalsIgnoreCase("despawnnpc")) {
+        if (args[0].equalsIgnoreCase("despawn")) {
             npcManager.despawnNPC();
             player.sendMessage("§cNPC entfernt.");
             return true;
         }
 
-        return false;
+        player.sendMessage("§eUnbekannter Subcommand. Nutze: /bierxp <spawn|despawn>");
+        return true;
     }
 }
