@@ -1,1 +1,1 @@
-rootProject.name = "BierXP"
+rootProject.name = "XP-H-ndler"
