@@ -10,6 +10,10 @@ commands:
     description: Spawnt einen NPC
     usage: /spawnnpc
     permission: bierxp.spawnnpc
+  despawnnpc:
+    description: Entfernt den NPC
+    usage: /despawnnpc
+    permission: bierxp.spawnnpc
 permissions:
   bierxp.spawnnpc:
     default: op
