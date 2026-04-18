@@ -13,8 +13,12 @@ java {
 
 repositories {
     mavenCentral()
+
+    // Purpur API
     maven("https://repo.purpurmc.org/snapshots")
-    maven("https://repo.dmulloy2.net/repository/public/")
+
+    // Richtiges ProtocolLib Repository
+    maven("https://repo.dmulloy2.net/repository/maven-public/")
 }
 
 dependencies {
