@@ -13,13 +13,11 @@ import java.util.UUID;
 
 public class BierXP extends JavaPlugin implements CommandExecutor {
 
-    private static BierXP instance;
     private NPCManager npcManager;
     private XPHandler xpHandler;
 
     @Override
     public void onEnable() {
-        instance = this;
 
         saveDefaultConfig();
 
@@ -55,7 +53,6 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
             return true;
         }
 
-        // /bierxp spawn
         if (args.length == 1 && args[0].equalsIgnoreCase("spawn")) {
 
             String skinValue =
@@ -78,7 +75,6 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
             return true;
         }
 
-        // /bierxp despawn
         if (args.length == 1 && args[0].equalsIgnoreCase("despawn")) {
 
             String uuid = getConfig().getString("banker-npc");
@@ -106,17 +102,5 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
 
         p.sendMessage("Nutze: /bierxp spawn oder /bierxp despawn");
         return true;
-    }
-
-    public static BierXP getInstance() {
-        return instance;
-    }
-
-    public NPCManager getNPCManager() {
-        return npcManager;
-    }
-
-    public XPHandler getXPHandler() {
-        return xpHandler;
     }
 }
