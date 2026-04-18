@@ -17,7 +17,7 @@ import java.util.UUID;
 public class NPCManager {
 
     private final ProtocolManager pm = ProtocolLibrary.getProtocolManager();
-    private int entityId = 123456; // egal, nur eindeutig
+    private int entityId = 123456;
     private UUID uuid = UUID.randomUUID();
 
     public void spawnNPC(Location loc, String name, String value, String signature) {
