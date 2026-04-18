@@ -1,0 +1,30 @@
+package de.bierxp;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+
+public class NPCClickListener implements Listener {
+
+    private final NPCManager npcManager;
+
+    public NPCClickListener(NPCManager npcManager) {
+        this.npcManager = npcManager;
+    }
+
+    @EventHandler
+    public void onNPCClick(PlayerInteractAtEntityEvent event) {
+        Entity clicked = event.getRightClicked();
+
+        if (npcManager.isNPC(clicked)) {
+            Player p = event.getPlayer();
+            event.setCancelled(true);
+
+            // HIER öffnest du dein GUI
+            Bukkit.getPluginManager().callEvent(new XPMenuOpenEvent(p));
+        }
+    }
+}
