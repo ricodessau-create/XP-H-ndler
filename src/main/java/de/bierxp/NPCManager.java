@@ -9,20 +9,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 
 public class NPCManager {
 
     private final ProtocolManager protocol = ProtocolLibrary.getProtocolManager();
 
+    private UUID npcUUID;
+    private int npcEntityId;
+
     public void spawnNPC(Location loc, String name, String value, String signature) {
 
-        UUID uuid = UUID.randomUUID();
-        int entityId = (int) (Math.random() * Integer.MAX_VALUE);
+        npcUUID = UUID.randomUUID();
+        npcEntityId = (int) (Math.random() * Integer.MAX_VALUE);
 
-        // Skin + Name
-        WrappedGameProfile profile = new WrappedGameProfile(uuid, name);
+        WrappedGameProfile profile = new WrappedGameProfile(npcUUID, name);
         profile.getProperties().put("textures", new WrappedSignedProperty("textures", value, signature));
 
         // 1) PlayerInfo ADD_PLAYER
@@ -40,8 +41,8 @@ public class NPCManager {
 
         // 2) Spawn NPC
         PacketContainer spawn = protocol.createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
-        spawn.getIntegers().write(0, entityId);
-        spawn.getUUIDs().write(0, uuid);
+        spawn.getIntegers().write(0, npcEntityId);
+        spawn.getUUIDs().write(0, npcUUID);
         spawn.getDoubles().write(0, loc.getX());
         spawn.getDoubles().write(1, loc.getY());
         spawn.getDoubles().write(2, loc.getZ());
@@ -50,12 +51,12 @@ public class NPCManager {
 
         // 3) Metadata (NameTag sichtbar)
         PacketContainer meta = protocol.createPacket(PacketType.Play.Server.ENTITY_METADATA);
-        meta.getIntegers().write(0, entityId);
+        meta.getIntegers().write(0, npcEntityId);
         WrappedDataWatcher watcher = new WrappedDataWatcher();
         watcher.setObject(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0);
         meta.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 
-        // An alle Spieler senden
+        // Senden
         for (Player p : Bukkit.getOnlinePlayers()) {
             try {
                 protocol.sendServerPacket(p, info);
@@ -65,5 +66,53 @@ public class NPCManager {
                 e.printStackTrace();
             }
         }
+
+        startAnimation();
+        startInteractionListener();
+    }
+
+    // Animation: NPC dreht den Kopf leicht
+    private void startAnimation() {
+        Bukkit.getScheduler().runTaskTimer(Bukkit.getPluginManager().getPlugin("BierXP"), () -> {
+            if (npcEntityId == 0) return;
+
+            PacketContainer look = protocol.createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
+            look.getIntegers().write(0, npcEntityId);
+            byte yaw = (byte) (new Random().nextInt(256));
+            look.getBytes().write(0, yaw);
+
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                try {
+                    protocol.sendServerPacket(p, look);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }, 20, 20);
+    }
+
+    // Interaktion: Rechtsklick erkennen
+    private void startInteractionListener() {
+        Bukkit.getPluginManager().registerEvents(new NPCListener(npcEntityId), Bukkit.getPluginManager().getPlugin("BierXP"));
+    }
+
+    // Despawn
+    public void despawnNPC() {
+        if (npcEntityId == 0) return;
+
+        PacketContainer destroy = protocol.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+        destroy.getIntLists().write(0, Collections.singletonList(npcEntityId));
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            try {
+                protocol.sendServerPacket(p, destroy);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        npcEntityId = 0;
+        npcUUID = null;
     }
 }
