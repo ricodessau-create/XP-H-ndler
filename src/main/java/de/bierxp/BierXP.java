@@ -20,6 +20,11 @@ public class BierXP extends JavaPlugin {
         }
 
         npcManager = new NPCManager();
+
+        // ⭐ WICHTIG: Commands registrieren
+        getCommand("spawnnpc").setExecutor(this);
+        getCommand("despawnnpc").setExecutor(this);
+
         getLogger().info("BierXP gestartet (Packet-NPC aktiv).");
     }
 
