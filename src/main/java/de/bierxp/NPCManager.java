@@ -9,7 +9,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Random;
+import java.util.UUID;
 
 public class NPCManager {
 
@@ -73,28 +75,31 @@ public class NPCManager {
 
     // Animation: NPC dreht den Kopf leicht
     private void startAnimation() {
-        Bukkit.getScheduler().runTaskTimer(Bukkit.getPluginManager().getPlugin("BierXP"), () -> {
-            if (npcEntityId == 0) return;
+        Bukkit.getScheduler().runTaskTimer(
+                Bukkit.getPluginManager().getPlugin("BierXP"),
+                () -> {
+                    if (npcEntityId == 0) return;
 
-            PacketContainer look = protocol.createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
-            look.getIntegers().write(0, npcEntityId);
-            byte yaw = (byte) (new Random().nextInt(256));
-            look.getBytes().write(0, yaw);
+                    PacketContainer look = protocol.createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
+                    look.getIntegers().write(0, npcEntityId);
+                    byte yaw = (byte) (new Random().nextInt(256));
+                    look.getBytes().write(0, yaw);
 
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                try {
-                    protocol.sendServerPacket(p, look);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }, 20, 20);
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        try {
+                            protocol.sendServerPacket(p, look);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                20, 20
+        );
     }
 
     // Interaktion: Rechtsklick erkennen
     private void startInteractionListener() {
-        Bukkit.getPluginManager().registerEvents(new NPCListener(npcEntityId), Bukkit.getPluginManager().getPlugin("BierXP"));
+        ProtocolLibrary.getProtocolManager().addPacketListener(new NPCListener(npcEntityId));
     }
 
     // Despawn
