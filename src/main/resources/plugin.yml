@@ -1,15 +1,15 @@
 name: BierXP
 main: de.bierxp.BierXP
-version: 1.0
-api-version: 1.21
+version: 1.0.0
+api-version: '1.21'
 author: RicoDessau
-
+depend:
+  - ProtocolLib
 commands:
-  bierxp:
-    description: XP Banker Command
-    usage: /bierxp
-    permission: bierxp.admin
-
+  spawnnpc:
+    description: Spawnt einen Test-NPC
+    usage: /spawnnpc
+    permission: bierxp.spawnnpc
 permissions:
-  bierxp.admin:
+  bierxp.spawnnpc:
     default: op
