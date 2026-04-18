@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FakePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -63,9 +64,9 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
             String skinSignature =
                     "n/OVwJbYfh7oivXp39CKKFE1jGkjgoUhUVTV6nTXPLL9gF5wcTEgiRZtGrG7BNCkOJCCAp3o4wj/jgsrDKj7ix5Qrq+CyWddCDro1N+nid9zggPFpZWZL5XIg7457RC95dAflHcwVJLMqC1xBegTUbp9xQqQrVbXty/pVov0xrqv3sSTSeod9O/ZXfWQLpg/btpo8movBUYC1p7tTO5yeRu+mCxq2vMOriqnkhmx2buv35amqyN2sIY3M6OnYUK2EIbgf1yF7t9AkZp/cvneAevR+9voO67qmkFeIeUIgIOWeX89tVb1TtZ3nCJGtckS40I3ha5gV7tGRJ0aa2CH6Tm55tTKRmcCk1/nRZZ4uwMnpM6NV3DrqBy2JuwGrGXwZ1ANFO0VlA70F2U2CNFFKgzWp2JObCw4E/Ufz/bA+VVG9ajN6VdFypto8vk1c3x4o9O2jKQ7JkbWv4SVpksUYe7MogOEiJgaPnUhJDQe973ARtHfBJtlja/yW2IoFOG+sV10d+5GcWGxls0YsZ8PlGKvGvaSkFdcSMx34BzFrRkijNBqOS5flBTD3dbYUj4GbXU5gj+dpniSnI8LTJDwAG5xXvqAA4mIvN6uP2zx+XYhQytIiEcpXGQU1Me5ytm6+cJ9UR/Z/83tQBqJfKoX1rrLKLO4Et0sgIDZ2EhWhMU=";
 
-            Player npc = npcManager.spawnNPC(
+            FakePlayer npc = npcManager.spawnNPC(
                     p.getLocation(),
-                    "XPBanker",   // <-- FIXED NAME
+                    "XPBanker",
                     skinValue,
                     skinSignature
             );
