@@ -1,42 +1,35 @@
 package de.bierxp;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 
 import java.util.UUID;
 
 public class NPCManager {
 
-    private ServerPlayer npc;
+    private HumanEntity npc;
 
     public void spawnNPC(Location loc, String name, String value, String signature) {
 
-        MinecraftServer nmsServer = ((CraftServer) Bukkit.getServer()).getServer();
-        ServerLevel nmsWorld = ((CraftPlayer) Bukkit.getOnlinePlayers().iterator().next()).getHandle().serverLevel();
+        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
+        profile.setProperty(new ProfileProperty("textures", value, signature));
 
-        GameProfile profile = new GameProfile(UUID.randomUUID(), name);
-        profile.getProperties().put("textures", new Property("textures", value, signature));
-
-        npc = new ServerPlayer(nmsServer, nmsWorld, profile);
-
-        npc.setPos(loc.getX(), loc.getY(), loc.getZ());
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.showEntity(Bukkit.getPluginManager().getPlugin("BierXP"), npc.getBukkitEntity());
-        }
+        npc = (HumanEntity) loc.getWorld().spawnEntity(loc, EntityType.PLAYER);
+        npc.setPlayerProfile(profile);
+        npc.setCustomName(name);
+        npc.setCustomNameVisible(true);
+        npc.setAI(false);
+        npc.setInvulnerable(true);
     }
 
     public void despawnNPC() {
         if (npc != null) {
-            npc.getBukkitEntity().remove();
+            npc.remove();
         }
     }
 }
