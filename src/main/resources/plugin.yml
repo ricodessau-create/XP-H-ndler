@@ -5,15 +5,13 @@ api-version: '1.21'
 author: RicoDessau
 depend:
   - ProtocolLib
+
 commands:
-  spawnnpc:
-    description: Spawnt einen NPC
-    usage: /spawnnpc
-    permission: bierxp.spawnnpc
-  despawnnpc:
-    description: Entfernt den NPC
-    usage: /despawnnpc
-    permission: bierxp.spawnnpc
+  bierxp:
+    description: Hauptbefehl für BierXP
+    usage: /bierxp <spawn|despawn>
+    permission: bierxp.admin
+
 permissions:
-  bierxp.spawnnpc:
+  bierxp.admin:
     default: op
