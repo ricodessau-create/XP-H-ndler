@@ -65,7 +65,7 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
 
             Player npc = npcManager.spawnNPC(
                     p.getLocation(),
-                    "BierXP Banker",
+                    "XPBanker",   // <-- FIXED NAME
                     skinValue,
                     skinSignature
             );
@@ -73,7 +73,7 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
             getConfig().set("banker-npc", npc.getUniqueId().toString());
             saveConfig();
 
-            p.sendMessage("Bankier gespawnt.");
+            p.sendMessage("XPBanker gespawnt.");
             return true;
         }
 
@@ -90,9 +90,9 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
                 Entity e = Bukkit.getEntity(UUID.fromString(uuid));
                 if (e != null) {
                     e.remove();
-                    p.sendMessage("Bankier entfernt.");
+                    p.sendMessage("XPBanker entfernt.");
                 } else {
-                    p.sendMessage("Bankier nicht gefunden.");
+                    p.sendMessage("XPBanker nicht gefunden.");
                 }
             } catch (Exception ex) {
                 p.sendMessage("Gespeicherte Banker-UUID ist ungültig.");
