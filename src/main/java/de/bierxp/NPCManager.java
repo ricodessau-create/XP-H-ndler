@@ -1,30 +1,35 @@
 package de.bierxp;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.FakePlayer;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
 public class NPCManager {
 
-    public FakePlayer spawnNPC(Location loc, String name, String skinValue, String skinSignature) {
+    public ServerPlayer spawnNPC(Location loc, String name, String skinValue, String skinSignature) {
 
-        // Profil erstellen
-        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
-        profile.getProperties().add(new ProfileProperty("textures", skinValue, skinSignature));
+        MinecraftServer nmsServer = ((CraftServer) Bukkit.getServer()).getServer();
+        ServerLevel nmsWorld = ((CraftWorld) loc.getWorld()).getHandle();
 
-        // FakePlayer spawnen (Paper/Purpur API)
-        FakePlayer npc = loc.getWorld().spawnFakePlayer(loc, profile);
+        GameProfile profile = new GameProfile(UUID.randomUUID(), name);
+        profile.getProperties().put("textures", new Property("textures", skinValue, skinSignature));
 
-        // Einstellungen
-        npc.setAI(false);
-        npc.setInvulnerable(true);
-        npc.setCollidable(false);
-        npc.setSilent(true);
-        npc.setGravity(false);
+        ServerPlayer npc = new ServerPlayer(nmsServer, nmsWorld, profile);
+
+        npc.setPos(loc.getX(), loc.getY(), loc.getZ());
+        npc.setGameMode(GameType.ADVENTURE);
+
+        nmsWorld.addFreshEntity(npc);
 
         return npc;
     }
