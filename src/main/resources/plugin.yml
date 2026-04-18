@@ -1,11 +1,17 @@
 name: BierXP
-version: 1.0
 main: de.bierxp.BierXP
+version: 1.0
 api-version: 1.21
 author: RicoDessau
+description: XP-Bank Plugin mit NPC
 
 commands:
   bierxp:
-    description: Spawnt den XP Bankier
-    usage: /bierxp spawn
+    description: Hauptbefehl für BierXP
+    usage: /bierxp
     permission: bierxp.admin
+
+permissions:
+  bierxp.admin:
+    description: Erlaubt das Verwalten des BierXP-Systems
+    default: op
