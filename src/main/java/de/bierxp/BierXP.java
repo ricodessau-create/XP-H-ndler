@@ -57,19 +57,6 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
         // /bierxp spawn
         if (args.length == 1 && args[0].equalsIgnoreCase("spawn")) {
 
-            // Falls schon ein Banker existiert → zuerst despawnen
-            String old = getConfig().getString("banker-npc");
-            if (old != null) {
-                try {
-                    Entity oldNpc = Bukkit.getEntity(UUID.fromString(old));
-                    if (oldNpc != null) {
-                        oldNpc.remove();
-                    }
-                } catch (IllegalArgumentException ignored) {
-                }
-            }
-
-            // Deine Mineskin-Daten (vollständig, 1 Zeile)
             String skinValue =
                     "ewogICJ0aW1lc3RhbXAiIDogMTc3NjM3OTE5NjExOCwKICAicHJvZmlsZUlkIiA6ICJmYzVhNDY3MDA0ZmM0MzM4OWE1MzgwNDBkY2QxM2Q2OCIsCiAgInByb2ZpbGVOYW1lIiA6ICJSaWNvRGVzc2F1IiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2ExZGFhMzlkNjY5MDY0ZGRjMDQ2NjgyNDE4MjAwMzM0MWNjNTA5NTdjODU1YjBlMTA0Y2EzYTY3MzhjODYxMzAiCiAgICB9CiAgfQp9";
 
@@ -83,7 +70,6 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
                     skinSignature
             );
 
-            // UUID speichern
             getConfig().set("banker-npc", npc.getUniqueId().toString());
             saveConfig();
 
@@ -108,7 +94,7 @@ public class BierXP extends JavaPlugin implements CommandExecutor {
                 } else {
                     p.sendMessage("Bankier nicht gefunden.");
                 }
-            } catch (IllegalArgumentException ex) {
+            } catch (Exception ex) {
                 p.sendMessage("Gespeicherte Banker-UUID ist ungültig.");
             }
 
