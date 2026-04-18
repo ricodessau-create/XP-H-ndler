@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "de.bierxp"
-version = "1.0"
+version = "1.0.0"
 
 java {
     toolchain {
@@ -14,10 +14,12 @@ java {
 repositories {
     mavenCentral()
     maven("https://repo.purpurmc.org/snapshots")
+    maven("https://repo.dmulloy2.net/repository/public/")
 }
 
 dependencies {
     compileOnly("org.purpurmc.purpur:purpur-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.2.0")
 }
 
 tasks.withType<JavaCompile> {
