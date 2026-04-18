@@ -3,15 +3,13 @@ main: de.bierxp.BierXP
 version: 1.0
 api-version: 1.21
 author: RicoDessau
-description: XP-Bank Plugin mit NPC
 
 commands:
   bierxp:
-    description: Hauptbefehl für BierXP
+    description: XP Banker Command
     usage: /bierxp
     permission: bierxp.admin
 
 permissions:
   bierxp.admin:
-    description: Erlaubt das Verwalten des BierXP-Systems
     default: op
