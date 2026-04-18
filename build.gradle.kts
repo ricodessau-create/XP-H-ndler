@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    paperweightDevelopmentBundle("io.papermc.paper:paper-dev-bundle:1.21.1-R0.1")
+    paperweightDevelopmentBundle("io.papermc.paper:paper-dev-bundle:1.21.4-R0.1-SNAPSHOT")
 }
 
 tasks.withType<JavaCompile> {
