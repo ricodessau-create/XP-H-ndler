@@ -14,12 +14,11 @@ java {
 repositories {
     mavenCentral()
     maven("https://repo.purpurmc.org/snapshots")
-    maven("https://repo.dmulloy2.net/repository/maven-public/")
 }
 
 dependencies {
     compileOnly("org.purpurmc.purpur:purpur-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly("com.comphenix.protocol:ProtocolLib-API:5.2.0")
+    compileOnly(files("libs/ProtocolLib.jar"))
 }
 
 tasks.withType<JavaCompile> {
