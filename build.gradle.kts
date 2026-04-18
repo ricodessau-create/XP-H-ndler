@@ -7,7 +7,9 @@ group = "de.bierxp"
 version = "1.0"
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 repositories {
@@ -16,11 +18,14 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
+    paperweightDevelopmentBundle("io.papermc.paper:paper-dev-bundle:1.21.1-R0.1-SNAPSHOT")
 }
 
-tasks {
-    assemble {
-        dependsOn(reobfJar)
-    }
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+    options.release.set(21)
+}
+
+tasks.jar {
+    archiveBaseName.set("BierXP")
 }
