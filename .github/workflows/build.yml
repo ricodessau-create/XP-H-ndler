@@ -20,6 +20,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Install Gradle Wrapper
+        run: |
+          gradle wrapper
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
