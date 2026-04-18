@@ -13,12 +13,11 @@ java {
 
 repositories {
     mavenCentral()
-    maven("https://repo.purpurmc.org/snapshots")
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
-    compileOnly("org.purpurmc.purpur:purpur-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly(files("libs/ProtocolLib.jar"))
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 }
 
 tasks.withType<JavaCompile> {
