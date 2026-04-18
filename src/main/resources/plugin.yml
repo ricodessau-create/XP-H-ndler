@@ -7,7 +7,7 @@ depend:
   - ProtocolLib
 commands:
   spawnnpc:
-    description: Spawnt einen Test-NPC
+    description: Spawnt einen NPC
     usage: /spawnnpc
     permission: bierxp.spawnnpc
 permissions:
