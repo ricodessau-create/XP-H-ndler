@@ -4,20 +4,22 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.FakePlayer;
+
+import java.util.UUID;
 
 public class NPCManager {
 
-    public Player spawnNPC(Location loc, String name, String skinValue, String skinSignature) {
+    public FakePlayer spawnNPC(Location loc, String name, String skinValue, String skinSignature) {
 
-        PlayerProfile profile = Bukkit.createProfile(null, name);
+        // Profil erstellen
+        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
         profile.getProperties().add(new ProfileProperty("textures", skinValue, skinSignature));
 
-        Player npc = (Player) loc.getWorld().spawnEntity(loc, EntityType.PLAYER);
+        // FakePlayer spawnen (Paper/Purpur API)
+        FakePlayer npc = loc.getWorld().spawnFakePlayer(loc, profile);
 
-        npc.setPlayerProfile(profile);
-
+        // Einstellungen
         npc.setAI(false);
         npc.setInvulnerable(true);
         npc.setCollidable(false);
