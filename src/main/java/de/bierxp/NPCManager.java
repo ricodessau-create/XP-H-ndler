@@ -17,7 +17,7 @@ public class NPCManager {
 
         npc = loc.getWorld().spawn(loc, PlayerDisplay.class, display -> {
             display.setProfile(profile);
-            display.setCustomName(name);
+            display.setCustomName(org.bukkit.content.SerializationContext.empty().asComponents().deserialize("§6" + name));
             display.setCustomNameVisible(true);
         });
     }
