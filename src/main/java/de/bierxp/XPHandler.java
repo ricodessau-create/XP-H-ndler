@@ -20,11 +20,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class XPHandler implements Listener {
 
@@ -36,18 +32,23 @@ public class XPHandler implements Listener {
         this.plugin = plugin;
     }
 
+    // ------------------------------------------------------------
+    //  NPC INTERACTION
+    // ------------------------------------------------------------
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInteractNPC(PlayerInteractEntityEvent e) {
         if (e.getHand() != EquipmentSlot.HAND) return;
         Entity entity = e.getRightClicked();
 
-        // NEU: NPC statt Villager erkennen
         if (entity.getName().equals("BierXP Banker")) {
             e.setCancelled(true);
             openBankGUI((Player) e.getPlayer());
         }
     }
 
+    // ------------------------------------------------------------
+    //  GUI
+    // ------------------------------------------------------------
     private void openBankGUI(Player p) {
         Inventory inv = Bukkit.createInventory(null, 27, guiTitle);
         int storedXp = getStoredXp(p.getUniqueId());
@@ -99,6 +100,9 @@ public class XPHandler implements Listener {
         }
     }
 
+    // ------------------------------------------------------------
+    //  CHAT INPUT FOR XP BOTTLES
+    // ------------------------------------------------------------
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
@@ -127,6 +131,9 @@ public class XPHandler implements Listener {
         }
     }
 
+    // ------------------------------------------------------------
+    //  XP BOTTLE USE
+    // ------------------------------------------------------------
     @EventHandler
     public void onBottleThrow(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
@@ -155,23 +162,66 @@ public class XPHandler implements Listener {
         } catch (Exception ex) { }
     }
 
+    // ------------------------------------------------------------
+    //  XP SYSTEM (DUPE-SAFE)
+    // ------------------------------------------------------------
+
+    // ECHTER XP-WERT
+    private int getRealTotalXP(Player p) {
+        int level = p.getLevel();
+        float progress = p.getExp();
+
+        int xpForLevel = getXpForLevel(level);
+        int xpForProgress = Math.round(progress * getXpToNextLevel(level));
+
+        return xpForLevel + xpForProgress;
+    }
+
+    private int getXpForLevel(int level) {
+        if (level <= 16) return level * level + 6 * level;
+        if (level <= 31) return (int) (2.5 * level * level - 40.5 * level + 360);
+        return (int) (4.5 * level * level - 162.5 * level + 2220);
+    }
+
+    private int getXpToNextLevel(int level) {
+        if (level <= 15) return 2 * level + 7;
+        if (level <= 30) return 5 * level - 38;
+        return 9 * level - 158;
+    }
+
+    // XP KORREKT ABZIEHEN
+    private void removeXp(Player p, int amount) {
+        int total = getRealTotalXP(p);
+        int newTotal = Math.max(0, total - amount);
+
+        p.setExp(0);
+        p.setLevel(0);
+        p.setTotalExperience(0);
+
+        p.giveExp(newTotal);
+    }
+
+    // ------------------------------------------------------------
+    //  BANKING
+    // ------------------------------------------------------------
     private void depositXp(Player p, int amount) {
-        if (p.getTotalExperience() < amount) {
+        int total = getRealTotalXP(p);
+        if (total < amount) {
             p.sendMessage(ChatColor.RED + "Nicht genug XP!");
             return;
         }
-        p.giveExp(-amount);
+
+        removeXp(p, amount);
         addStoredXp(p.getUniqueId(), amount);
         p.sendMessage(ChatColor.GREEN + "+ " + amount + " XP eingezahlt.");
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
     }
 
     private void depositAllXp(Player p) {
-        int total = p.getTotalExperience();
+        int total = getRealTotalXP(p);
         if (total <= 0) return;
-        p.setTotalExperience(0);
-        p.setLevel(0);
-        p.setExp(0);
+
+        removeXp(p, total);
         addStoredXp(p.getUniqueId(), total);
         p.sendMessage(ChatColor.GREEN + "+ " + total + " XP eingezahlt.");
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
@@ -198,6 +248,9 @@ public class XPHandler implements Listener {
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
     }
 
+    // ------------------------------------------------------------
+    //  XP BOTTLES
+    // ------------------------------------------------------------
     private void createXpBottle(Player p, int amount) {
         int stored = getStoredXp(p.getUniqueId());
         if (stored < amount) {
@@ -219,6 +272,9 @@ public class XPHandler implements Listener {
         p.sendMessage(ChatColor.GREEN + "Flasche erstellt.");
     }
 
+    // ------------------------------------------------------------
+    //  STORAGE
+    // ------------------------------------------------------------
     public void save() {
         plugin.saveConfig();
     }
@@ -244,4 +300,4 @@ public class XPHandler implements Listener {
         item.setItemMeta(meta);
         return item;
     }
-    }
+}
