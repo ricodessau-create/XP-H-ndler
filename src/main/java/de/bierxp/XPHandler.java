@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,7 +32,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  NPC INTERACTION
+    // NPC INTERACTION
     // ------------------------------------------------------------
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInteractNPC(PlayerInteractEntityEvent e) {
@@ -47,7 +46,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  GUI
+    // GUI
     // ------------------------------------------------------------
     private void openBankGUI(Player p) {
         Inventory inv = Bukkit.createInventory(null, 27, guiTitle);
@@ -101,7 +100,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  CHAT INPUT FOR XP BOTTLES
+    // CHAT INPUT FOR XP BOTTLES
     // ------------------------------------------------------------
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
@@ -132,7 +131,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  XP BOTTLE USE
+    // XP BOTTLE USE
     // ------------------------------------------------------------
     @EventHandler
     public void onBottleThrow(PlayerInteractEvent e) {
@@ -163,10 +162,8 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  XP SYSTEM (DUPE-SAFE)
+    // REAL XP CALCULATION (DUPE SAFE)
     // ------------------------------------------------------------
-
-    // ECHTER XP-WERT
     private int getRealTotalXP(Player p) {
         int level = p.getLevel();
         float progress = p.getExp();
@@ -189,7 +186,6 @@ public class XPHandler implements Listener {
         return 9 * level - 158;
     }
 
-    // XP KORREKT ABZIEHEN
     private void removeXp(Player p, int amount) {
         int total = getRealTotalXP(p);
         int newTotal = Math.max(0, total - amount);
@@ -202,7 +198,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  BANKING
+    // BANKING
     // ------------------------------------------------------------
     private void depositXp(Player p, int amount) {
         int total = getRealTotalXP(p);
@@ -249,7 +245,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  XP BOTTLES
+    // XP BOTTLES
     // ------------------------------------------------------------
     private void createXpBottle(Player p, int amount) {
         int stored = getStoredXp(p.getUniqueId());
@@ -273,7 +269,7 @@ public class XPHandler implements Listener {
     }
 
     // ------------------------------------------------------------
-    //  STORAGE
+    // STORAGE
     // ------------------------------------------------------------
     public void save() {
         plugin.saveConfig();
