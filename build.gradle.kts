@@ -13,12 +13,12 @@ java {
 
 repositories {
     mavenCentral()
-    maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.purpurmc.org/snapshots")
 }
 
 dependencies {
-    // FIX: PlayerDisplay existiert erst ab 1.21.2+
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("org.purpurmc.purpur:purpur-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly(files("libs/ProtocolLib.jar"))
 }
 
 tasks.withType<JavaCompile> {
