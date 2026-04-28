@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "de.bierxp"
-version = "1.0.0"
+version = "1.0.1"
 
 java {
     toolchain {
@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+    // Geändert auf die aktuellste 1.21.4 Version
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly(files("libs/ProtocolLib.jar"))
 }
