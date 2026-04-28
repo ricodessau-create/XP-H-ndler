@@ -20,16 +20,6 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Remove old Gradle wrapper
-        run: |
-          rm -rf gradle
-          rm -f gradlew
-          rm -f gradlew.bat
-
-      - name: Generate new Gradle wrapper (Java 21)
-        run: |
-          gradle wrapper --gradle-version 8.7
-
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
