@@ -17,9 +17,7 @@ repositories {
 }
 
 dependencies {
-    // Feste Version – KEIN SNAPSHOT – garantiert PlayerDisplay
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-20241019.012345-123")
-
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly(files("libs/ProtocolLib.jar"))
 }
 
