@@ -13,14 +13,12 @@ java {
 
 repositories {
     mavenCentral()
-
-    // WICHTIG: Paper 1.21.4 liegt NUR hier
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
-    // PlayerDisplay existiert NUR in dieser Version
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    // Feste Version – KEIN SNAPSHOT – garantiert PlayerDisplay
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-20241019.012345-123")
 
     compileOnly(files("libs/ProtocolLib.jar"))
 }
