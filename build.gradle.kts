@@ -15,7 +15,7 @@ repositories {
     mavenCentral()
 
     // WICHTIG: Paper 1.21.4 liegt NUR hier
-    maven("https://repo.papermc.io/repository/maven-snapshots/")
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
