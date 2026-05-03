@@ -47,7 +47,6 @@ public class BierXP extends JavaPlugin {
 
         if (args[0].equalsIgnoreCase("spawn")) {
             Location loc = player.getLocation().add(player.getLocation().getDirection().normalize().multiply(2));
-            // Standardmäßig laden wir deinen Namen, der Skin folgt über das Profil
             npcManager.spawnNPC(loc, "RicoDessau", "", "");
             player.sendMessage("§aXP-Händler Rico gespawnt!");
             return true;
