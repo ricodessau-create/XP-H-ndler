@@ -1,29 +1,24 @@
 package de.bierxp;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.PlayerDisplay;
-import java.util.UUID;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Villager;
 
 public class NPCManager {
 
-    private PlayerDisplay npc;
+    private Villager npc;
 
     public void spawnNPC(Location loc, String name, String value, String signature) {
-        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
-        
-        if (value != null && !value.isEmpty()) {
-            profile.setProperty(new ProfileProperty("textures", value, signature));
-        }
+        if (npc != null) despawnNPC();
 
-        npc = loc.getWorld().spawn(loc, PlayerDisplay.class, display -> {
-            display.setProfile(profile);
-            display.setCustomName(Component.text("§6" + name));
-            display.setCustomNameVisible(true);
-        });
+        npc = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
+        npc.setCustomNameVisible(true);
+        npc.customName(Component.text("§6" + name));
+        npc.setAI(false);
+        npc.setInvulnerable(true);
+        npc.setProfession(Villager.Profession.LIBRARIAN);
+        npc.setVillagerType(Villager.Type.PLAINS);
     }
 
     public void despawnNPC() {
