@@ -74,13 +74,15 @@ public class XPHandler implements Listener {
     }
 
     private int getTotalExperience(Player player) {
-        int exp = Math.round(player.getExp() * player.expToLevel());
         int level = player.getLevel();
-        while (level > 0) {
-            level--;
-            exp += getExpAtLevel(level);
+        float exp = player.getExp();
+        int res = 0;
+
+        for (int i = 0; i < level; i++) {
+            res += getExpAtLevel(i);
         }
-        return exp;
+        res += Math.round(exp * getExpAtLevel(level));
+        return res;
     }
 
     private void setTotalExperience(Player player, int exp) {
