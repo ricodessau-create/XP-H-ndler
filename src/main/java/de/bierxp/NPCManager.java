@@ -15,8 +15,7 @@ public class NPCManager {
     public void spawnNPC(Location loc, String name, String value, String signature) {
         PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), name);
         
-        // Skin-Daten setzen (Nur wenn gültige Daten vorhanden sind)
-        if (value != null && !value.isEmpty() && !value.equals("DEIN_VALUE")) {
+        if (value != null && !value.isEmpty()) {
             profile.setProperty(new ProfileProperty("textures", value, signature));
         }
 
