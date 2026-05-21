@@ -23,7 +23,6 @@ public class NPCClickListener implements Listener {
         if (npcManager.isNPC(clicked)) {
             Player p = event.getPlayer();
             event.setCancelled(true);
-            
             BierXP plugin = BierXP.getPlugin(BierXP.class);
             plugin.getXpHandler().openBankGUI(p);
         }
