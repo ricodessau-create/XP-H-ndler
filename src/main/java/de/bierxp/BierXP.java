@@ -46,9 +46,10 @@ public class BierXP extends JavaPlugin {
         }
 
         if (args[0].equalsIgnoreCase("spawn")) {
-            Location loc = player.getLocation().add(player.getLocation().getDirection().normalize().multiply(2));
-            npcManager.spawnNPC(loc, "RicoDessau", "", "");
-            player.sendMessage("§aXP-Händler Rico gespawnt!");
+            Location loc = player.getLocation().add(
+                    player.getLocation().getDirection().normalize().multiply(2));
+            npcManager.spawnNPC(loc, "Rico der XP-Dealer", "", "");
+            player.sendMessage("§aRico der XP-Dealer wurde gespawnt!");
             return true;
         }
 
