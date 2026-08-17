@@ -43,9 +43,10 @@ public class XPHandler implements Listener {
         inv.setItem(20, createItem(Material.GOLD_NUGGET,       "§664 XP auszahlen",   "§7Direkt als XP"));
         inv.setItem(21, createItem(Material.GOLD_NUGGET,       "§610 XP auszahlen",   "§7Direkt als XP"));
         inv.setItem(22, createItem(Material.GOLD_NUGGET,       "§61 XP auszahlen",    "§7Direkt als XP"));
-        inv.setItem(23, createItem(Material.EXPERIENCE_BOTTLE, "§b64 XP als Flasche", "§7Als XP-Flasche ins Inventar"));
-        inv.setItem(24, createItem(Material.EXPERIENCE_BOTTLE, "§b10 XP als Flasche", "§7Als XP-Flasche ins Inventar"));
-        inv.setItem(25, createItem(Material.EXPERIENCE_BOTTLE, "§b1 XP als Flasche",  "§7Als XP-Flasche ins Inventar"));
+        inv.setItem(23, createItem(Material.EXPERIENCE_BOTTLE, "§bAlle XP als Flasche", "§7Als XP-Flasche ins Inventar"));
+        inv.setItem(24, createItem(Material.EXPERIENCE_BOTTLE, "§b64 XP als Flasche",   "§7Als XP-Flasche ins Inventar"));
+        inv.setItem(25, createItem(Material.EXPERIENCE_BOTTLE, "§b10 XP als Flasche",   "§7Als XP-Flasche ins Inventar"));
+        inv.setItem(26, createItem(Material.EXPERIENCE_BOTTLE, "§b1 XP als Flasche",    "§7Als XP-Flasche ins Inventar"));
 
         player.openInventory(inv);
     }
@@ -99,10 +100,12 @@ public class XPHandler implements Listener {
         } else if (item.getType() == Material.EXPERIENCE_BOTTLE) {
             int balance = getBalance(uuid);
             int amount;
-            if (name.contains("64"))      amount = 64;
+            if (name.contains("Alle"))    amount = balance;
+            else if (name.contains("64")) amount = 64;
             else if (name.contains("10")) amount = 10;
             else                          amount = 1;
 
+            if (balance < 1) { player.sendMessage("§cDeine Bank ist leer!"); return; }
             if (balance < amount) { player.sendMessage("§cNicht genug XP! (§f" + balance + " §cvorhanden)"); return; }
             if (player.getInventory().firstEmpty() == -1) { player.sendMessage("§cDein Inventar ist voll!"); return; }
 
