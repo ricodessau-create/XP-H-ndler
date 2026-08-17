@@ -1,6 +1,7 @@
 package de.bierxp;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
@@ -14,7 +15,7 @@ public class NPCManager {
 
         npc = (Villager) loc.getWorld().spawnEntity(loc, EntityType.VILLAGER);
         npc.setCustomNameVisible(true);
-        npc.customName(Component.text("§6" + name));
+        npc.customName(Component.text(name).color(NamedTextColor.GOLD));
         npc.setAI(false);
         npc.setInvulnerable(true);
         npc.setProfession(Villager.Profession.LIBRARIAN);
