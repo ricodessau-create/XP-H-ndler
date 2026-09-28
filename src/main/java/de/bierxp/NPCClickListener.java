@@ -1,30 +1,39 @@
 package de.bierxp;
 
-import org.bukkit.entity.Entity;
+import net.citizensnpcs.api.event.NPCRightClickEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
 public class NPCClickListener implements Listener {
 
+    private final BierXP plugin;
     private final NPCManager npcManager;
 
-    public NPCClickListener(NPCManager npcManager) {
+    public NPCClickListener(
+            BierXP plugin,
+            NPCManager npcManager
+    ) {
+        this.plugin = plugin;
         this.npcManager = npcManager;
     }
 
-    @EventHandler
-    public void onNPCClick(PlayerInteractAtEntityEvent event) {
-        if (event.getHand() != EquipmentSlot.HAND) return;
-        Entity clicked = event.getRightClicked();
-
-        if (npcManager.isNPC(clicked)) {
-            Player p = event.getPlayer();
-            event.setCancelled(true);
-            BierXP plugin = BierXP.getPlugin(BierXP.class);
-            plugin.getXpHandler().openBankGUI(p);
+    @EventHandler(
+            priority = EventPriority.HIGHEST,
+            ignoreCancelled = true
+    )
+    public void onNPCRightClick(
+            NPCRightClickEvent event
+    ) {
+        if (!npcManager.isNPC(event.getNPC())) {
+            return;
         }
+
+        Player player = event.getClicker();
+
+        event.setCancelled(true);
+
+        plugin.getXpHandler().openBankGUI(player);
     }
 }
