@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "de.bierxp"
-version = "1.0.1"
+version = "2.0.0"
 
 java {
     toolchain {
@@ -13,13 +13,18 @@ java {
 
 repositories {
     mavenCentral()
+
     maven("https://repo.papermc.io/repository/maven-public/")
+
+    maven("https://maven.citizensnpcs.co/repo")
 }
 
 dependencies {
-    // Geändert auf die aktuellste 1.21.4 Version
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly(files("libs/ProtocolLib.jar"))
+
+    compileOnly("net.citizensnpcs:citizens-main:2.0.35-SNAPSHOT") {
+        exclude(group = "*", module = "*")
+    }
 }
 
 tasks.withType<JavaCompile> {
