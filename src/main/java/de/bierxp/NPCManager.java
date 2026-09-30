@@ -3,6 +3,7 @@ package de.bierxp;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -18,8 +19,72 @@ public class NPCManager {
         this.plugin = plugin;
     }
 
-    public void loadNPC() {
+    public void loadNPCDelayed() {
+        Bukkit.getScheduler().runTaskLater(
+                plugin,
+                () -> tryLoadNPC(0),
+                20L
+        );
+    }
+
+    private void tryLoadNPC(int attempt) {
+        if (!plugin.isEnabled()) {
+            return;
+        }
+
+        if (!CitizensAPI.hasImplementation()) {
+            if (attempt < 10) {
+                Bukkit.getScheduler().runTaskLater(
+                        plugin,
+                        () -> tryLoadNPC(attempt + 1),
+                        20L
+                );
+            } else {
+                plugin.getLogger().severe(
+                        "Citizens ist nach mehreren Ladeversuchen nicht bereit."
+                );
+            }
+
+            return;
+        }
+
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+        if (registry == null) {
+            if (attempt < 10) {
+                Bukkit.getScheduler().runTaskLater(
+                        plugin,
+                        () -> tryLoadNPC(attempt + 1),
+                        20L
+                );
+            } else {
+                plugin.getLogger().severe(
+                        "Die Citizens-NPC-Registry konnte nicht geladen werden."
+                );
+            }
+
+            return;
+        }
+
+        loadNPC();
+    }
+
+    public void loadNPC() {
+        if (!CitizensAPI.hasImplementation()) {
+            plugin.getLogger().warning(
+                    "Citizens ist noch nicht bereit."
+            );
+            return;
+        }
+
+        NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+        if (registry == null) {
+            plugin.getLogger().warning(
+                    "Die Citizens-NPC-Registry ist nicht verfügbar."
+            );
+            return;
+        }
 
         int npcId = plugin.getConfig().getInt(
                 "npc.id",
@@ -34,29 +99,47 @@ public class NPCManager {
         NPC storedNPC = registry.getById(npcId);
 
         if (storedNPC == null) {
+            plugin.getLogger().warning(
+                    "Der gespeicherte XP-Dealer mit der ID "
+                            + npcId
+                            + " wurde bei Citizens nicht gefunden."
+            );
             npc = null;
             return;
         }
 
         npc = storedNPC;
-        npc.setName(NPC_NAME);
-        npc.setProtected(true);
-        npc.setUseMinecraftAI(false);
-        npc.setFlyable(false);
+
+        configureNPC(npc);
 
         Location location = loadLocation();
 
         if (location == null) {
+            plugin.getLogger().warning(
+                    "Die gespeicherte Position des XP-Dealers konnte nicht geladen werden."
+            );
             return;
         }
 
-        if (!npc.isSpawned()) {
+        if (npc.isSpawned()) {
+            Location currentLocation = npc.getEntity().getLocation();
+
+            if (!sameLocation(currentLocation, location)) {
+                npc.despawn();
+                npc.spawn(location);
+            }
+        } else {
             if (!npc.spawn(location)) {
                 plugin.getLogger().warning(
                         "Der gespeicherte XP-Dealer konnte nicht gespawnt werden."
                 );
+                return;
             }
         }
+
+        plugin.getLogger().info(
+                "Rico der XP-Dealer wurde nach dem Serverstart geladen."
+        );
     }
 
     public boolean spawnNPC(Location location) {
@@ -64,7 +147,15 @@ public class NPCManager {
             return false;
         }
 
+        if (!CitizensAPI.hasImplementation()) {
+            return false;
+        }
+
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+        if (registry == null) {
+            return false;
+        }
 
         removeExistingNPC();
 
@@ -73,10 +164,7 @@ public class NPCManager {
                 NPC_NAME
         );
 
-        npc.setName(NPC_NAME);
-        npc.setProtected(true);
-        npc.setUseMinecraftAI(false);
-        npc.setFlyable(false);
+        configureNPC(npc);
 
         boolean spawned = npc.spawn(location);
 
@@ -102,10 +190,41 @@ public class NPCManager {
 
     public boolean despawnNPC() {
         if (npc == null) {
+            int storedId = plugin.getConfig().getInt(
+                    "npc.id",
+                    -1
+            );
+
+            if (storedId <= 0) {
+                return false;
+            }
+
+            if (!CitizensAPI.hasImplementation()) {
+                return false;
+            }
+
+            NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+            if (registry == null) {
+                return false;
+            }
+
+            npc = registry.getById(storedId);
+
+            if (npc == null) {
+                return false;
+            }
+        }
+
+        if (!CitizensAPI.hasImplementation()) {
             return false;
         }
 
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+        if (registry == null) {
+            return false;
+        }
 
         if (npc.isSpawned()) {
             npc.despawn();
@@ -117,7 +236,7 @@ public class NPCManager {
 
         plugin.getConfig().set(
                 "npc.id",
-                null
+                -1
         );
 
         plugin.getConfig().set(
@@ -137,6 +256,10 @@ public class NPCManager {
             return;
         }
 
+        if (!CitizensAPI.hasImplementation()) {
+            return;
+        }
+
         if (npc.isSpawned() && npc.getEntity() != null) {
             saveLocation(
                     npc.getEntity().getLocation()
@@ -150,7 +273,11 @@ public class NPCManager {
 
         plugin.saveConfig();
 
-        CitizensAPI.getNPCRegistry().saveToStore();
+        NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+        if (registry != null) {
+            registry.saveToStore();
+        }
     }
 
     public boolean isNPC(NPC clickedNPC) {
@@ -165,12 +292,29 @@ public class NPCManager {
         return npc;
     }
 
+    private void configureNPC(NPC npc) {
+        npc.setName(NPC_NAME);
+        npc.setProtected(true);
+        npc.setUseMinecraftAI(false);
+        npc.setFlyable(false);
+    }
+
     private void removeExistingNPC() {
         if (npc == null) {
             return;
         }
 
+        if (!CitizensAPI.hasImplementation()) {
+            npc = null;
+            return;
+        }
+
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
+
+        if (registry == null) {
+            npc = null;
+            return;
+        }
 
         if (npc.isSpawned()) {
             npc.despawn();
@@ -232,7 +376,9 @@ public class NPCManager {
 
         if (world == null) {
             plugin.getLogger().warning(
-                    "Die Welt '" + worldName + "' des XP-Dealers existiert nicht."
+                    "Die Welt '"
+                            + worldName
+                            + "' des XP-Dealers existiert nicht."
             );
             return null;
         }
@@ -265,5 +411,27 @@ public class NPCManager {
                 yaw,
                 pitch
         );
+    }
+
+    private boolean sameLocation(
+            Location first,
+            Location second
+    ) {
+        if (first == null
+                || second == null
+                || first.getWorld() == null
+                || second.getWorld() == null) {
+            return false;
+        }
+
+        if (!first.getWorld().getName().equals(
+                second.getWorld().getName()
+        )) {
+            return false;
+        }
+
+        return Math.abs(first.getX() - second.getX()) < 0.1
+                && Math.abs(first.getY() - second.getY()) < 0.1
+                && Math.abs(first.getZ() - second.getZ()) < 0.1;
     }
 }
