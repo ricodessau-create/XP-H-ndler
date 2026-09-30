@@ -3,20 +3,40 @@ package de.bierxp;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
+import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class NPCManager {
 
     public static final String NPC_NAME = "Rico der XP-Dealer";
 
+    private static final String SKIN_UUID =
+            "fc5a4670-04fc-4338-9a53-8040dcd13d68";
+
+    private static final Pattern NAME_PATTERN = Pattern.compile(
+            "\"name\"\\s*:\\s*\"([^\"]+)\""
+    );
+
     private final BierXP plugin;
+    private final HttpClient httpClient;
     private NPC npc;
 
     public NPCManager(BierXP plugin) {
         this.plugin = plugin;
+
+        this.httpClient = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
     }
 
     public void loadNPCDelayed() {
@@ -71,18 +91,12 @@ public class NPCManager {
 
     public void loadNPC() {
         if (!CitizensAPI.hasImplementation()) {
-            plugin.getLogger().warning(
-                    "Citizens ist noch nicht bereit."
-            );
             return;
         }
 
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
 
         if (registry == null) {
-            plugin.getLogger().warning(
-                    "Die Citizens-NPC-Registry ist nicht verfügbar."
-            );
             return;
         }
 
@@ -104,6 +118,7 @@ public class NPCManager {
                             + npcId
                             + " wurde bei Citizens nicht gefunden."
             );
+
             npc = null;
             return;
         }
@@ -136,6 +151,8 @@ public class NPCManager {
                 return;
             }
         }
+
+        loadSkin();
 
         plugin.getLogger().info(
                 "Rico der XP-Dealer wurde nach dem Serverstart geladen."
@@ -184,6 +201,8 @@ public class NPCManager {
         plugin.saveConfig();
 
         registry.saveToStore();
+
+        loadSkin();
 
         return true;
     }
@@ -297,6 +316,90 @@ public class NPCManager {
         npc.setProtected(true);
         npc.setUseMinecraftAI(false);
         npc.setFlyable(false);
+    }
+
+    private void loadSkin() {
+        if (npc == null) {
+            return;
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(
+                        URI.create(
+                                "https://sessionserver.mojang.com/session/minecraft/profile/"
+                                        + SKIN_UUID.replace("-", "")
+                        )
+                )
+                .header(
+                        "Accept",
+                        "application/json"
+                )
+                .GET()
+                .build();
+
+        httpClient.sendAsync(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        ).thenAccept(response -> {
+
+            if (response.statusCode() != 200) {
+                plugin.getLogger().warning(
+                        "Der Minecraft-Skin konnte nicht geladen werden. HTTP "
+                                + response.statusCode()
+                );
+                return;
+            }
+
+            Matcher matcher = NAME_PATTERN.matcher(
+                    response.body()
+            );
+
+            if (!matcher.find()) {
+                plugin.getLogger().warning(
+                        "Für die Skin-UUID konnte kein Minecraft-Spielername gefunden werden."
+                );
+                return;
+            }
+
+            String playerName = matcher.group(1);
+
+            Bukkit.getScheduler().runTask(
+                    plugin,
+                    () -> {
+
+                        if (!plugin.isEnabled() || npc == null) {
+                            return;
+                        }
+
+                        SkinTrait skinTrait =
+                                npc.getOrAddTrait(SkinTrait.class);
+
+                        skinTrait.setSkinName(
+                                playerName,
+                                true
+                        );
+
+                        skinTrait.setShouldUpdateSkins(
+                                true
+                        );
+
+                        plugin.getLogger().info(
+                                "Der Skin von "
+                                        + playerName
+                                        + " wurde für Rico der XP-Dealer gesetzt."
+                        );
+                    }
+            );
+
+        }).exceptionally(error -> {
+
+            plugin.getLogger().warning(
+                    "Fehler beim Laden des Minecraft-Skins: "
+                            + error.getMessage()
+            );
+
+            return null;
+        });
     }
 
     private void removeExistingNPC() {
@@ -434,4 +537,4 @@ public class NPCManager {
                 && Math.abs(first.getY() - second.getY()) < 0.1
                 && Math.abs(first.getZ() - second.getZ()) < 0.1;
     }
-}
+                }
