@@ -40,7 +40,7 @@ public class BierXP extends JavaPlugin {
             getCommand("bierxp").setExecutor(this);
         }
 
-        npcManager.loadNPC();
+        npcManager.loadNPCDelayed();
 
         getLogger().info(
                 "BierXP v" + getDescription().getVersion() + " erfolgreich geladen."
